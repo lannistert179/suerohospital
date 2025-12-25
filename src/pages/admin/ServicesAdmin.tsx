@@ -236,9 +236,25 @@ export default function ServicesAdmin() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
               <Card key={service.id} className={!service.is_active ? 'opacity-60' : ''}>
+                {service.image_url && (
+                  <div className="aspect-video overflow-hidden">
+                    <img 
+                      src={service.image_url} 
+                      alt={service.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{service.title}</CardTitle>
+                    <div className="flex items-center gap-3">
+                      {service.icon && (
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <span className="text-xs font-medium text-primary">{service.icon}</span>
+                        </div>
+                      )}
+                      <CardTitle className="text-base">{service.title}</CardTitle>
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">#{service.display_order}</span>
                       {!service.is_active && (
