@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay, subDays } from 'date-fns';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, History, User, FileText, Stethoscope, Newspaper, Users, Search, Download, X, LogIn, LogOut } from 'lucide-react';
+import { Loader2, History, User, FileText, Stethoscope, Newspaper, Users, Search, Download, X, LogIn, LogOut, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface AuditLog {
   id: string;
@@ -64,10 +67,24 @@ const entityOptions = [
   { value: 'user', label: 'Users' },
 ];
 
+const dateRangePresets = [
+  { value: 'all', label: 'All Time' },
+  { value: 'today', label: 'Today' },
+  { value: '7days', label: 'Last 7 Days' },
+  { value: '30days', label: 'Last 30 Days' },
+  { value: 'custom', label: 'Custom Range' },
+];
+
+const ITEMS_PER_PAGE = 20;
+
 export default function AuditTrail() {
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
   const [entityFilter, setEntityFilter] = useState('all');
+  const [dateRangePreset, setDateRangePreset] = useState('all');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   const { data: logs, isLoading } = useQuery({
@@ -76,13 +93,31 @@ export default function AuditTrail() {
       const { data, error } = await supabase
         .from('audit_logs')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(500);
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as AuditLog[];
     },
   });
+
+  const getDateRange = () => {
+    const now = new Date();
+    switch (dateRangePreset) {
+      case 'today':
+        return { start: startOfDay(now), end: endOfDay(now) };
+      case '7days':
+        return { start: startOfDay(subDays(now, 7)), end: endOfDay(now) };
+      case '30days':
+        return { start: startOfDay(subDays(now, 30)), end: endOfDay(now) };
+      case 'custom':
+        return { 
+          start: startDate ? startOfDay(startDate) : undefined, 
+          end: endDate ? endOfDay(endDate) : undefined 
+        };
+      default:
+        return { start: undefined, end: undefined };
+    }
+  };
 
   const filteredLogs = logs?.filter((log) => {
     const matchesSearch = searchQuery === '' || 
@@ -93,8 +128,52 @@ export default function AuditTrail() {
     const matchesAction = actionFilter === 'all' || log.action === actionFilter;
     const matchesEntity = entityFilter === 'all' || log.entity_type === entityFilter;
     
-    return matchesSearch && matchesAction && matchesEntity;
+    const { start, end } = getDateRange();
+    const logDate = new Date(log.created_at);
+    const matchesDateRange = 
+      (!start || logDate >= start) && 
+      (!end || logDate <= end);
+    
+    return matchesSearch && matchesAction && matchesEntity && matchesDateRange;
   });
+
+  // Pagination
+  const totalItems = filteredLogs?.length || 0;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const paginatedLogs = filteredLogs?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleDatePresetChange = (value: string) => {
+    setDateRangePreset(value);
+    if (value !== 'custom') {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    }
+    setCurrentPage(1);
+  };
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    setStartDate(date);
+    setCurrentPage(1);
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    setEndDate(date);
+    setCurrentPage(1);
+  };
 
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), 'MMM d, yyyy h:mm a');
@@ -122,9 +201,13 @@ export default function AuditTrail() {
     setSearchQuery('');
     setActionFilter('all');
     setEntityFilter('all');
+    setDateRangePreset('all');
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchQuery !== '' || actionFilter !== 'all' || entityFilter !== 'all';
+  const hasActiveFilters = searchQuery !== '' || actionFilter !== 'all' || entityFilter !== 'all' || dateRangePreset !== 'all';
 
   const exportToCSV = () => {
     if (!filteredLogs || filteredLogs.length === 0) {
@@ -184,51 +267,128 @@ export default function AuditTrail() {
         {/* Filters */}
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, or action..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+            <div className="flex flex-col gap-4">
+              {/* First row: Search and quick filters */}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, email, or action..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Select value={actionFilter} onValueChange={handleFilterChange(setActionFilter)}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Filter by action" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {actionOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={entityFilter} onValueChange={handleFilterChange(setEntityFilter)}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Filter by entity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {entityOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={actionFilter} onValueChange={setActionFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Filter by action" />
-                </SelectTrigger>
-                <SelectContent>
-                  {actionOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={entityFilter} onValueChange={setEntityFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Filter by entity" />
-                </SelectTrigger>
-                <SelectContent>
-                  {entityOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {hasActiveFilters && (
-                <Button variant="ghost" size="icon" onClick={clearFilters}>
-                  <X className="h-4 w-4" />
-                </Button>
+
+              {/* Second row: Date range filters */}
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <Select value={dateRangePreset} onValueChange={handleDatePresetChange}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Date range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dateRangePresets.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {dateRangePreset === 'custom' && (
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-[180px] justify-start text-left font-normal",
+                            !startDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {startDate ? format(startDate, "PPP") : "Start date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={handleStartDateChange}
+                          disabled={(date) => date > new Date() || (endDate ? date > endDate : false)}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <span className="text-muted-foreground hidden sm:inline">to</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-[180px] justify-start text-left font-normal",
+                            !endDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {endDate ? format(endDate, "PPP") : "End date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={handleEndDateChange}
+                          disabled={(date) => date > new Date() || (startDate ? date < startDate : false)}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                {hasActiveFilters && (
+                  <Button variant="ghost" onClick={clearFilters} className="gap-2">
+                    <X className="h-4 w-4" />
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+
+              {hasActiveFilters && filteredLogs && (
+                <p className="text-sm text-muted-foreground">
+                  Showing {paginatedLogs?.length} of {filteredLogs.length} filtered records
+                  {logs && filteredLogs.length !== logs.length && ` (${logs.length} total)`}
+                </p>
               )}
             </div>
-            {hasActiveFilters && filteredLogs && (
-              <p className="text-sm text-muted-foreground mt-3">
-                Showing {filteredLogs.length} of {logs?.length} records
-              </p>
-            )}
           </CardContent>
         </Card>
 
@@ -244,9 +404,9 @@ export default function AuditTrail() {
               <div className="flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : filteredLogs && filteredLogs.length > 0 ? (
+            ) : paginatedLogs && paginatedLogs.length > 0 ? (
               <div className="space-y-4">
-                {filteredLogs.map((log) => {
+                {paginatedLogs.map((log) => {
                   const EntityIcon = entityIcons[log.entity_type] || FileText;
                   const ActionIcon = getActionIcon(log.action);
                   
@@ -297,6 +457,60 @@ export default function AuditTrail() {
                     </div>
                   );
                 })}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      <div className="hidden sm:flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum: number;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNum)}
+                              className="w-8 h-8 p-0"
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
