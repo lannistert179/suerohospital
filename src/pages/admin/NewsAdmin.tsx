@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Plus, Pencil, Trash2, Loader2, Calendar as CalendarIcon, Eye, EyeOff, GripVertical, Clock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Calendar as CalendarIcon, Eye, EyeOff, GripVertical, Clock, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { logAuditEvent } from '@/lib/auditLog';
@@ -37,6 +38,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const CATEGORIES = [
+  { value: 'news', label: 'News', color: 'bg-blue-500/10 text-blue-600' },
+  { value: 'announcement', label: 'Announcement', color: 'bg-purple-500/10 text-purple-600' },
+  { value: 'event', label: 'Event', color: 'bg-green-500/10 text-green-600' },
+  { value: 'health-tip', label: 'Health Tip', color: 'bg-amber-500/10 text-amber-600' },
+  { value: 'update', label: 'Update', color: 'bg-cyan-500/10 text-cyan-600' },
+] as const;
+
 interface NewsArticle {
   id: string;
   title: string;
@@ -48,6 +57,11 @@ interface NewsArticle {
   published_at: string | null;
   created_at: string;
   display_order: number | null;
+  category: string | null;
+}
+
+function getCategoryInfo(category: string | null) {
+  return CATEGORIES.find(c => c.value === category) || CATEGORIES[0];
 }
 
 interface SortableArticleCardProps {
@@ -111,6 +125,10 @@ function SortableArticleCard({ article, onEdit, onDelete, isDeleting }: Sortable
                     Draft
                   </span>
                 )}
+                <span className={cn("inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded", getCategoryInfo(article.category).color)}>
+                  <Tag className="h-3 w-3" />
+                  {getCategoryInfo(article.category).label}
+                </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <CalendarIcon className="h-3 w-3" />
                   {article.published_at 
@@ -163,6 +181,7 @@ export default function NewsAdmin() {
     is_published: false,
     published_at: null as Date | null,
     published_time: '12:00',
+    category: 'news',
   });
 
   const { user } = useAuth();
@@ -221,6 +240,7 @@ export default function NewsAdmin() {
         is_published: data.is_published,
         published_at: publishedAt,
         display_order: newOrder,
+        category: data.category,
       }).select().single();
       if (error) throw error;
       return { insertedData, formData: data };
@@ -261,6 +281,7 @@ export default function NewsAdmin() {
         excerpt: data.excerpt || null,
         image_url: data.image_url || null,
         is_published: data.is_published,
+        category: data.category,
       };
       
       // Update published_at if date was set or when first publishing
@@ -352,6 +373,7 @@ export default function NewsAdmin() {
       is_published: false,
       published_at: null,
       published_time: '12:00',
+      category: 'news',
     });
     setEditingArticle(null);
     setIsOpen(false);
@@ -377,6 +399,7 @@ export default function NewsAdmin() {
       is_published: article.is_published,
       published_at: publishedDate,
       published_time: publishedTime,
+      category: article.category || 'news',
     });
     setIsOpen(true);
   };
@@ -428,6 +451,24 @@ export default function NewsAdmin() {
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="excerpt">Excerpt</Label>

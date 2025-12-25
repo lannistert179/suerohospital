@@ -1,12 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, ArrowRight, Loader2, Newspaper } from "lucide-react";
+import { Calendar, ArrowRight, Loader2, Newspaper, Megaphone, CalendarDays, Heart, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 
 type NewsItem = Tables<"news">;
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType; bgColor: string; textColor: string }> = {
+  news: { label: 'News', icon: Newspaper, bgColor: 'bg-blue-500', textColor: 'text-blue-600' },
+  announcement: { label: 'Announcement', icon: Megaphone, bgColor: 'bg-purple-500', textColor: 'text-purple-600' },
+  event: { label: 'Event', icon: CalendarDays, bgColor: 'bg-green-500', textColor: 'text-green-600' },
+  'health-tip': { label: 'Health Tip', icon: Heart, bgColor: 'bg-amber-500', textColor: 'text-amber-600' },
+  update: { label: 'Update', icon: RefreshCw, bgColor: 'bg-cyan-500', textColor: 'text-cyan-600' },
+};
+
+function getCategoryConfig(category: string | null) {
+  return CATEGORY_CONFIG[category || 'news'] || CATEGORY_CONFIG.news;
+}
 
 const News = () => {
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
@@ -49,6 +61,10 @@ const News = () => {
     return format(new Date(dateStr), "MMMM d, yyyy");
   };
 
+  const featuredItem = newsItems[0];
+  const featuredCategory = getCategoryConfig(featuredItem.category);
+  const FeaturedIcon = featuredCategory.icon;
+
   return (
     <section id="news" className="py-20 bg-secondary/50">
       <div className="container mx-auto px-4">
@@ -70,29 +86,29 @@ const News = () => {
             <div className="bg-card rounded-2xl overflow-hidden shadow-card h-full flex flex-col hover:shadow-xl transition-shadow duration-300">
               <div className="relative aspect-[16/10] overflow-hidden">
                 <img
-                  src={newsItems[0].image_url || "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=400&fit=crop"}
-                  alt={newsItems[0].title}
+                  src={featuredItem.image_url || "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=400&fit=crop"}
+                  alt={featuredItem.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                    <Newspaper className="w-3.5 h-3.5" />
-                    News
+                  <span className={`inline-flex items-center gap-1.5 ${featuredCategory.bgColor} text-white px-3 py-1 rounded-full text-sm font-medium`}>
+                    <FeaturedIcon className="w-3.5 h-3.5" />
+                    {featuredCategory.label}
                   </span>
                 </div>
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                   <Calendar className="w-4 h-4" />
-                  <span>{formatDate(newsItems[0].published_at)}</span>
+                  <span>{formatDate(featuredItem.published_at)}</span>
                 </div>
                 <h3 className="font-serif text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
-                  {newsItems[0].title}
+                  {featuredItem.title}
                 </h3>
                 <p className="text-muted-foreground mb-4 flex-1">
-                  {newsItems[0].excerpt}
+                  {featuredItem.excerpt}
                 </p>
-                <Link to={`/news/${newsItems[0].id}`}>
+                <Link to={`/news/${featuredItem.id}`}>
                   <Button variant="link" className="p-0 h-auto justify-start text-primary">
                     Read More <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -102,46 +118,51 @@ const News = () => {
           </div>
 
           {/* Other Articles */}
-          {newsItems.slice(1).map((item) => (
-            <div key={item.id} className="group">
-              <div className="bg-card rounded-2xl overflow-hidden shadow-card flex flex-col sm:flex-row h-full hover:shadow-xl transition-shadow duration-300">
-                <div className="relative sm:w-1/3 aspect-video sm:aspect-auto overflow-hidden">
-                  <img
-                    src={item.image_url || "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=400&fit=crop"}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 sm:hidden">
-                    <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs font-medium">
-                      <Newspaper className="w-3 h-3" />
-                      News
-                    </span>
+          {newsItems.slice(1).map((item) => {
+            const categoryConfig = getCategoryConfig(item.category);
+            const CategoryIcon = categoryConfig.icon;
+            
+            return (
+              <div key={item.id} className="group">
+                <div className="bg-card rounded-2xl overflow-hidden shadow-card flex flex-col sm:flex-row h-full hover:shadow-xl transition-shadow duration-300">
+                  <div className="relative sm:w-1/3 aspect-video sm:aspect-auto overflow-hidden">
+                    <img
+                      src={item.image_url || "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=400&fit=crop"}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 sm:hidden">
+                      <span className={`inline-flex items-center gap-1 ${categoryConfig.bgColor} text-white px-2 py-0.5 rounded-full text-xs font-medium`}>
+                        <CategoryIcon className="w-3 h-3" />
+                        {categoryConfig.label}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="p-5 flex-1 flex flex-col">
-                  <div className="hidden sm:inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-medium w-fit mb-2">
-                    <Newspaper className="w-3 h-3" />
-                    News
+                  <div className="p-5 flex-1 flex flex-col">
+                    <div className={`hidden sm:inline-flex items-center gap-1 ${categoryConfig.bgColor}/10 ${categoryConfig.textColor} px-2 py-0.5 rounded-full text-xs font-medium w-fit mb-2`}>
+                      <CategoryIcon className="w-3 h-3" />
+                      {categoryConfig.label}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{formatDate(item.published_at)}</span>
+                    </div>
+                    <h3 className="font-serif text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">
+                      {item.excerpt}
+                    </p>
+                    <Link to={`/news/${item.id}`}>
+                      <Button variant="link" className="p-0 h-auto justify-start text-primary text-sm">
+                        Read More <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{formatDate(item.published_at)}</span>
-                  </div>
-                  <h3 className="font-serif text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">
-                    {item.excerpt}
-                  </p>
-                  <Link to={`/news/${item.id}`}>
-                    <Button variant="link" className="p-0 h-auto justify-start text-primary text-sm">
-                      Read More <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </Link>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
