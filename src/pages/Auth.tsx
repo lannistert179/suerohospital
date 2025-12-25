@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useRateLimiter } from '@/hooks/useRateLimiter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import { Loader2, Shield } from 'lucide-react';
+import { Loader2, Shield, AlertTriangle, Lock } from 'lucide-react';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -23,6 +25,13 @@ export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Rate limiter: 5 attempts per minute, 5 minute lockout
+  const rateLimiter = useRateLimiter({
+    maxAttempts: 5,
+    windowMs: 60 * 1000,
+    lockoutMs: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     if (!loading && user) {
@@ -55,6 +64,17 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check rate limit before attempting
+    if (!rateLimiter.checkRateLimit()) {
+      toast({
+        variant: 'destructive',
+        title: 'Too many attempts',
+        description: `Please wait ${rateLimiter.formatRemainingTime(rateLimiter.remainingTime)} before trying again.`,
+      });
+      return;
+    }
+    
     if (!validateForm()) return;
     
     setIsLoading(true);
@@ -62,24 +82,42 @@ export default function Auth() {
     
     if (error) {
       setIsLoading(false);
+      rateLimiter.recordAttempt(false);
+      
+      const remainingAttempts = rateLimiter.getRemainingAttempts() - 1;
+      const attemptsWarning = remainingAttempts > 0 && remainingAttempts <= 2
+        ? ` ${remainingAttempts} attempt${remainingAttempts === 1 ? '' : 's'} remaining.`
+        : '';
+      
       toast({
         variant: 'destructive',
         title: 'Sign in failed',
-        description: error.message === 'Invalid login credentials' 
+        description: (error.message === 'Invalid login credentials' 
           ? 'Invalid email or password. Please try again.'
-          : error.message,
+          : error.message) + attemptsWarning,
       });
     } else {
+      rateLimiter.recordAttempt(true);
       toast({
         title: 'Welcome back!',
         description: 'You have been signed in successfully.',
       });
-      // The useEffect will handle navigation when user state updates
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check rate limit before attempting
+    if (!rateLimiter.checkRateLimit()) {
+      toast({
+        variant: 'destructive',
+        title: 'Too many attempts',
+        description: `Please wait ${rateLimiter.formatRemainingTime(rateLimiter.remainingTime)} before trying again.`,
+      });
+      return;
+    }
+    
     if (!validateForm()) return;
     
     setIsLoading(true);
@@ -87,6 +125,8 @@ export default function Auth() {
     
     if (error) {
       setIsLoading(false);
+      rateLimiter.recordAttempt(false);
+      
       let message = error.message;
       if (error.message.includes('already registered')) {
         message = 'This email is already registered. Please sign in instead.';
@@ -97,13 +137,15 @@ export default function Auth() {
         description: message,
       });
     } else {
+      rateLimiter.recordAttempt(true);
       toast({
         title: 'Account created!',
         description: 'You have been signed up successfully.',
       });
-      // The useEffect will handle navigation when user state updates
     }
   };
+
+  const isFormDisabled = isLoading || rateLimiter.isLocked;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
@@ -118,10 +160,32 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {rateLimiter.isLocked && (
+            <Alert variant="destructive" className="mb-4">
+              <Lock className="h-4 w-4" />
+              <AlertDescription>
+                Too many failed attempts. Please wait{' '}
+                <span className="font-semibold">
+                  {rateLimiter.formatRemainingTime(rateLimiter.remainingTime)}
+                </span>{' '}
+                before trying again.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {!rateLimiter.isLocked && rateLimiter.attempts > 0 && rateLimiter.attempts < rateLimiter.maxAttempts && (
+            <Alert className="mb-4 border-amber-500/50 bg-amber-500/10">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700 dark:text-amber-400">
+                {rateLimiter.getRemainingAttempts()} attempt{rateLimiter.getRemainingAttempts() === 1 ? '' : 's'} remaining before temporary lockout.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin" disabled={isFormDisabled}>Sign In</TabsTrigger>
+              <TabsTrigger value="signup" disabled={isFormDisabled}>Sign Up</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -134,7 +198,7 @@ export default function Auth() {
                     placeholder="admin@hospital.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isFormDisabled}
                   />
                   {errors.email && (
                     <p className="text-sm text-destructive">{errors.email}</p>
@@ -148,15 +212,15 @@ export default function Auth() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isFormDisabled}
                   />
                   {errors.password && (
                     <p className="text-sm text-destructive">{errors.password}</p>
                   )}
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isFormDisabled}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
+                  {rateLimiter.isLocked ? 'Temporarily Locked' : 'Sign In'}
                 </Button>
               </form>
             </TabsContent>
@@ -171,7 +235,7 @@ export default function Auth() {
                     placeholder="Dr. John Smith"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isFormDisabled}
                   />
                 </div>
                 <div className="space-y-2">
@@ -182,7 +246,7 @@ export default function Auth() {
                     placeholder="admin@hospital.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isFormDisabled}
                   />
                   {errors.email && (
                     <p className="text-sm text-destructive">{errors.email}</p>
@@ -196,15 +260,15 @@ export default function Auth() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isFormDisabled}
                   />
                   {errors.password && (
                     <p className="text-sm text-destructive">{errors.password}</p>
                   )}
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isFormDisabled}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
+                  {rateLimiter.isLocked ? 'Temporarily Locked' : 'Create Account'}
                 </Button>
               </form>
             </TabsContent>
