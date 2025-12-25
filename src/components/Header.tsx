@@ -59,9 +59,6 @@ const Header = () => {
                 {link.label}
               </a>
             ))}
-            <Button variant="hero" size="default">
-              Book Appointment
-            </Button>
             <Link to="/auth">
               <Button variant="outline" size="sm" className="gap-2">
                 <LogIn className="w-4 h-4" />
@@ -90,9 +87,6 @@ const Header = () => {
                   {link.label}
                 </a>
               ))}
-              <Button variant="hero" size="default" className="w-full mt-2">
-                Book Appointment
-              </Button>
               <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" size="default" className="w-full gap-2">
                   <LogIn className="w-4 h-4" />
