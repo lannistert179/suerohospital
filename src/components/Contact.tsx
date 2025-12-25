@@ -2,6 +2,14 @@ import { Phone, MapPin, Clock, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
+const hotlines = [
+  { department: "OPD / Pharmacy", number: "0917-159-7308" },
+  { department: "Emergency Room", number: "0917-813-9433" },
+  { department: "Billing & Records", number: "0956-523-0750" },
+  { department: "Laboratory, Radiology, Heart & Lung Station", number: "0966-083-4956" },
+  { department: "Administrative Assistance", number: "0917-139-3826" },
+];
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -30,6 +38,34 @@ const Contact = () => {
             Have questions or need to schedule an appointment? Reach out to us 
             through any of the channels below.
           </p>
+        </div>
+
+        {/* SGH Hotline Section */}
+        <div className="mb-16">
+          <div className="text-center mb-10">
+            <h3 className="font-serif text-2xl md:text-3xl font-bold text-foreground">
+              SGH Hotline
+            </h3>
+            <p className="text-muted-foreground mt-2">Reach us directly for your healthcare needs</p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {hotlines.map((hotline) => (
+              <a
+                key={hotline.department}
+                href={`tel:${hotline.number.replace(/-/g, "")}`}
+                className="group bg-card border border-border rounded-xl p-5 text-center hover:border-primary hover:shadow-card transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Phone className="w-5 h-5 text-primary" />
+                </div>
+                <h4 className="font-semibold text-foreground text-sm mb-2 min-h-[40px] flex items-center justify-center">
+                  {hotline.department}
+                </h4>
+                <p className="text-primary font-bold text-lg">{hotline.number}</p>
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
