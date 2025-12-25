@@ -9,6 +9,7 @@ const Header = () => {
     { href: "#home", label: "Home" },
     { href: "#services", label: "Services" },
     { href: "#about", label: "About" },
+    { href: "#appointment", label: "Appointment" },
     { href: "#contact", label: "Contact" },
   ];
 
@@ -58,8 +59,8 @@ const Header = () => {
                 {link.label}
               </a>
             ))}
-            <Button variant="hero" size="default">
-              Book Appointment
+            <Button variant="hero" size="default" asChild>
+              <a href="#appointment">Book Appointment</a>
             </Button>
           </div>
 
@@ -87,8 +88,8 @@ const Header = () => {
                   {link.label}
                 </a>
               ))}
-              <Button variant="hero" size="default" className="w-full mt-2">
-                Book Appointment
+              <Button variant="hero" size="default" className="w-full mt-2" asChild>
+                <a href="#appointment" onClick={() => setMobileMenuOpen(false)}>Book Appointment</a>
               </Button>
             </div>
           </div>
