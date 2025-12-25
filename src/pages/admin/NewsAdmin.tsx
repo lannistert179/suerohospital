@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Plus, Pencil, Trash2, Loader2, Calendar, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 interface NewsArticle {
   id: string;
@@ -210,16 +211,12 @@ export default function NewsAdmin() {
                     placeholder="Full article content..."
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Featured Image URL</Label>
-                  <Input
-                    id="image_url"
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    placeholder="https://..."
-                  />
-                </div>
+                <ImageUpload
+                  label="Featured Image"
+                  value={formData.image_url}
+                  onChange={(url) => setFormData({ ...formData, image_url: url })}
+                  folder="news"
+                />
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-2">
                     {formData.is_published ? (
