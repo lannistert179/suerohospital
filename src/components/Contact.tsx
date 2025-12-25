@@ -133,12 +133,12 @@ const Contact = () => {
               {/* Map */}
               <div className="mt-8 aspect-video bg-muted rounded-lg overflow-hidden">
                 <iframe
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=120.4400%2C17.8100%2C120.4600%2C17.8300&amp;layer=mapnik&amp;marker=17.8200%2C120.4500"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=120.4450%2C17.7880%2C120.4650%2C17.7980&amp;layer=mapnik&amp;marker=17.7926%2C120.4559"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
                   loading="lazy"
-                  title="Suero General Hospital Location - Baclig, Cabugao, Ilocos Sur"
+                  title="Suero General Hospital Location - Manila North Road, Baclig, Cabugao, Ilocos Sur"
                 ></iframe>
               </div>
             </div>
