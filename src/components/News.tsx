@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, Loader2, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,9 +92,11 @@ const News = () => {
                 <p className="text-muted-foreground mb-4 flex-1">
                   {newsItems[0].excerpt}
                 </p>
-                <Button variant="link" className="p-0 h-auto justify-start text-primary">
-                  Read More <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+                <Link to={`/news/${newsItems[0].id}`}>
+                  <Button variant="link" className="p-0 h-auto justify-start text-primary">
+                    Read More <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -130,9 +133,11 @@ const News = () => {
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">
                     {item.excerpt}
                   </p>
-                  <Button variant="link" className="p-0 h-auto justify-start text-primary text-sm">
-                    Read More <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
+                  <Link to={`/news/${item.id}`}>
+                    <Button variant="link" className="p-0 h-auto justify-start text-primary text-sm">
+                      Read More <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
