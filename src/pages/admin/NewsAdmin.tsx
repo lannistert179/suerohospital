@@ -59,7 +59,7 @@ export default function NewsAdmin() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { error } = await supabase.from('news').insert({
+      const { data: insertedData, error } = await supabase.from('news').insert({
         title: data.title,
         content: data.content || null,
         excerpt: data.excerpt || null,
@@ -67,10 +67,18 @@ export default function NewsAdmin() {
         author_id: user?.id,
         is_published: data.is_published,
         published_at: data.is_published ? new Date().toISOString() : null,
-      });
+      }).select().single();
       if (error) throw error;
+      return { insertedData, formData: data };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      logAuditEvent({
+        action: 'create',
+        entityType: 'news',
+        entityId: result.insertedData?.id,
+        entityName: result.formData.title,
+        details: { is_published: result.formData.is_published },
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
       toast({ title: 'Article created successfully' });
       resetForm();
@@ -97,8 +105,17 @@ export default function NewsAdmin() {
       
       const { error } = await supabase.from('news').update(updateData).eq('id', id);
       if (error) throw error;
+      return { id, data, wasPublished };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      const action = result.data.is_published && !result.wasPublished ? 'publish' : 'update';
+      logAuditEvent({
+        action,
+        entityType: 'news',
+        entityId: result.id,
+        entityName: result.data.title,
+        details: { is_published: result.data.is_published },
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
       toast({ title: 'Article updated successfully' });
       resetForm();
@@ -109,11 +126,18 @@ export default function NewsAdmin() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('news').delete().eq('id', id);
+    mutationFn: async (article: NewsArticle) => {
+      const { error } = await supabase.from('news').delete().eq('id', article.id);
       if (error) throw error;
+      return article;
     },
-    onSuccess: () => {
+    onSuccess: (article) => {
+      logAuditEvent({
+        action: 'delete',
+        entityType: 'news',
+        entityId: article.id,
+        entityName: article.title,
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
       toast({ title: 'Article deleted successfully' });
     },
@@ -300,7 +324,7 @@ export default function NewsAdmin() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => deleteMutation.mutate(article.id)}
+                      onClick={() => deleteMutation.mutate(article)}
                       disabled={deleteMutation.isPending}
                     >
                       <Trash2 className="h-3 w-3 mr-1" />
