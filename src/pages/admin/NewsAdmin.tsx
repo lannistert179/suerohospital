@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import ImageUpload from '@/components/admin/ImageUpload';
 import GalleryUpload from '@/components/admin/GalleryUpload';
 import { logAuditEvent } from '@/lib/auditLog';
+import { getErrorMessage } from '@/lib/errorHandler';
 import { cn } from '@/lib/utils';
 import {
   DndContext,
@@ -262,7 +263,7 @@ export default function NewsAdmin() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -312,7 +313,7 @@ export default function NewsAdmin() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -333,7 +334,7 @@ export default function NewsAdmin() {
       toast({ title: 'Article deleted successfully' });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -349,7 +350,7 @@ export default function NewsAdmin() {
       toast({ title: 'Articles reordered successfully' });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 

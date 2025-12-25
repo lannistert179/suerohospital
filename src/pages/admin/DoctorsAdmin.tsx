@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { logAuditEvent } from '@/lib/auditLog';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 interface Doctor {
   id: string;
@@ -81,7 +82,7 @@ export default function DoctorsAdmin() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -111,7 +112,7 @@ export default function DoctorsAdmin() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -132,7 +133,7 @@ export default function DoctorsAdmin() {
       });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
