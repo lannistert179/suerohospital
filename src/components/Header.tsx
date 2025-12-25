@@ -3,21 +3,28 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import hospitalLogo from "@/assets/hospital-logo.png";
-
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const navLinks = [
-    { href: "#home", label: "Home" },
-    { href: "#services", label: "Services" },
-    { href: "#about", label: "About" },
-    { href: "#doctors", label: "Doctors" },
-    { href: "#news", label: "News" },
-    { href: "#contact", label: "Contact" },
-  ];
-
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+  const navLinks = [{
+    href: "#home",
+    label: "Home"
+  }, {
+    href: "#services",
+    label: "Services"
+  }, {
+    href: "#about",
+    label: "About"
+  }, {
+    href: "#doctors",
+    label: "Doctors"
+  }, {
+    href: "#news",
+    label: "News"
+  }, {
+    href: "#contact",
+    label: "Contact"
+  }];
+  return <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       {/* Top bar */}
       <div className="bg-primary text-primary-foreground py-2">
         <div className="container mx-auto px-4 flex flex-wrap justify-between items-center text-sm">
@@ -33,7 +40,7 @@ const Header = () => {
           </div>
           <div className="hidden md:flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            <span>2732 MacArthur Hwy, San Antonio, Cabugao, Ilocos Sur</span>
+            <span>2732 MacArthur Highway, Baclig, Cabugao, Ilocos Sur</span>
           </div>
         </div>
       </div>
@@ -50,15 +57,9 @@ const Header = () => {
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-foreground/80 hover:text-primary transition-colors font-medium"
-              >
+            {navLinks.map(link => <a key={link.href} href={link.href} className="text-foreground/80 hover:text-primary transition-colors font-medium">
                 {link.label}
-              </a>
-            ))}
+              </a>)}
             <Link to="/auth">
               <Button variant="outline" size="sm" className="gap-2">
                 <LogIn className="w-4 h-4" />
@@ -74,19 +75,11 @@ const Header = () => {
         </div>
 
         {/* Mobile navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-border pt-4 animate-fade-in">
+        {mobileMenuOpen && <div className="md:hidden mt-4 pb-4 border-t border-border pt-4 animate-fade-in">
             <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
+              {navLinks.map(link => <a key={link.href} href={link.href} className="text-foreground/80 hover:text-primary transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
                   {link.label}
-                </a>
-              ))}
+                </a>)}
               <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" size="default" className="w-full gap-2">
                   <LogIn className="w-4 h-4" />
@@ -94,11 +87,8 @@ const Header = () => {
                 </Button>
               </Link>
             </div>
-          </div>
-        )}
+          </div>}
       </nav>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
