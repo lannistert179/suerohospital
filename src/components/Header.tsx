@@ -41,7 +41,8 @@ const Header = () => {
           <a href="#home" className="flex items-center gap-3">
             <img src={hospitalLogo} alt="Suero General Hospital" className="h-12 w-auto" />
             <div>
-              <h1 className="font-serif text-xl font-bold text-foreground">Suero General Hospital</h1>
+              <h1 className="font-serif text-xl font-bold text-foreground">Our Quest:</h1>
+              <p className="font-serif text-lg italic text-primary">Your health at its best.</p>
             </div>
           </a>
 
