@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Clock, Shield, Phone } from "lucide-react";
 import heroImage from "@/assets/hospital-hero.jpg";
-
 const Hero = () => {
-  return (
-    <section id="home" className="relative min-h-screen flex items-center pt-32 pb-16">
+  return <section id="home" className="relative min-h-screen flex items-center pt-32 pb-16">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <img src={heroImage} alt="Suero General Hospital building exterior" className="w-full h-full object-cover" />
@@ -25,9 +23,7 @@ const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground mb-8 animate-fade-up delay-200 leading-relaxed">
-            Suero General Hospital provides comprehensive healthcare services to the community of Cabugao, Ilocos Sur.
-            With our dedicated medical professionals and modern facilities, we're committed to delivering exceptional
-            patient care around the clock.
+            Suero General Hospital provides comprehensive healthcare services to the community of Cabugao, Ilocos Sur, adjacent municipalities, and the neighboring province of Ilocos Norte. With our dedicated medical professionals and modern facilities, we're committed to delivering exceptional patient care around the clock.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-up delay-300">
@@ -71,8 +67,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
