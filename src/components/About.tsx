@@ -1,24 +1,21 @@
 import { CheckCircle, Users, Award, Building, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const stats = [
-  { icon: Users, value: "10,000+", label: "Patients Served" },
-  { icon: Award, value: "Level 1", label: "DOH Licensed" },
-  { icon: Building, value: "24/7", label: "Availability" },
-];
-
-const features = [
-  "DOH-licensed Level 1 General Hospital",
-  "Private healthcare facility",
-  "Complete diagnostic laboratory services",
-  "24/7 Emergency care available",
-  "Experienced medical professionals",
-  "Accessible location in Baclig, Cabugao",
-];
-
+const stats = [{
+  icon: Users,
+  value: "10,000+",
+  label: "Patients Served"
+}, {
+  icon: Award,
+  value: "Level 1",
+  label: "DOH Licensed"
+}, {
+  icon: Building,
+  value: "24/7",
+  label: "Availability"
+}];
+const features = ["DOH-licensed Level 1 General Hospital", "Private healthcare facility", "Complete diagnostic laboratory services", "24/7 Emergency care available", "Experienced medical professionals", "Accessible location in Baclig, Cabugao"];
 const About = () => {
-  return (
-    <section id="about" className="py-20 bg-background">
+  return <section id="about" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
@@ -29,12 +26,7 @@ const About = () => {
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
               Trusted Healthcare Partner in Ilocos Sur
             </h2>
-            <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-              Suero General Hospital is a DOH-licensed Level 1 General Hospital 
-              serving the community of Cabugao and the greater Ilocos Sur region. 
-              Located in Baclig, Cabugao, we provide accessible and quality 
-              healthcare to families throughout the province.
-            </p>
+            <p className="text-muted-foreground text-lg mb-6 leading-relaxed">Suero General Hospital is a DOH-licensed Level 1 General Hospital serving the community of Cabugao, the greater Ilocos Sur region, and neighboring towns of Ilocos Norte. Located in Baclig, Cabugao, we provide accessible and quality healthcare to families throughout the province.</p>
             <p className="text-muted-foreground mb-8 leading-relaxed">
               As a private healthcare facility, we are committed to delivering 
               comprehensive medical services including General Medicine, Internal Medicine, 
@@ -43,12 +35,10 @@ const About = () => {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              {features.map((feature) => (
-                <div key={feature} className="flex items-start gap-3">
+              {features.map(feature => <div key={feature} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <span className="text-foreground text-sm">{feature}</span>
-                </div>
-              ))}
+                </div>)}
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -56,12 +46,7 @@ const About = () => {
                 <a href="#appointment">Book Appointment</a>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <a 
-                  href="https://www.facebook.com/suero.hospital/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2"
-                >
+                <a href="https://www.facebook.com/suero.hospital/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                   <Facebook className="w-4 h-4" />
                   Follow on Facebook
                 </a>
@@ -83,20 +68,16 @@ const About = () => {
               </div>
               
               <div className="grid grid-cols-3 gap-4">
-                {stats.map((stat) => (
-                  <div key={stat.label} className="text-center p-4 bg-card rounded-lg shadow-card">
+                {stats.map(stat => <div key={stat.label} className="text-center p-4 bg-card rounded-lg shadow-card">
                     <stat.icon className="w-6 h-6 text-primary mx-auto mb-2" />
                     <p className="font-serif text-2xl font-bold text-foreground">{stat.value}</p>
                     <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default About;
