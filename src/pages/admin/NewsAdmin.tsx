@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Plus, Pencil, Trash2, Loader2, Calendar as CalendarIcon, Eye, EyeOff, GripVertical, Clock, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import ImageUpload from '@/components/admin/ImageUpload';
+import GalleryUpload from '@/components/admin/GalleryUpload';
 import { logAuditEvent } from '@/lib/auditLog';
 import { cn } from '@/lib/utils';
 import {
@@ -58,6 +59,7 @@ interface NewsArticle {
   created_at: string;
   display_order: number | null;
   category: string | null;
+  gallery_images: string[] | null;
 }
 
 function getCategoryInfo(category: string | null) {
@@ -182,6 +184,7 @@ export default function NewsAdmin() {
     published_at: null as Date | null,
     published_time: '12:00',
     category: 'news',
+    gallery_images: [] as string[],
   });
 
   const { user } = useAuth();
@@ -241,6 +244,7 @@ export default function NewsAdmin() {
         published_at: publishedAt,
         display_order: newOrder,
         category: data.category,
+        gallery_images: data.gallery_images.length > 0 ? data.gallery_images : null,
       }).select().single();
       if (error) throw error;
       return { insertedData, formData: data };
@@ -282,6 +286,7 @@ export default function NewsAdmin() {
         image_url: data.image_url || null,
         is_published: data.is_published,
         category: data.category,
+        gallery_images: data.gallery_images.length > 0 ? data.gallery_images : null,
       };
       
       // Update published_at if date was set or when first publishing
@@ -374,6 +379,7 @@ export default function NewsAdmin() {
       published_at: null,
       published_time: '12:00',
       category: 'news',
+      gallery_images: [],
     });
     setEditingArticle(null);
     setIsOpen(false);
@@ -400,6 +406,7 @@ export default function NewsAdmin() {
       published_at: publishedDate,
       published_time: publishedTime,
       category: article.category || 'news',
+      gallery_images: Array.isArray(article.gallery_images) ? article.gallery_images : [],
     });
     setIsOpen(true);
   };
@@ -495,6 +502,14 @@ export default function NewsAdmin() {
                   value={formData.image_url}
                   onChange={(url) => setFormData({ ...formData, image_url: url })}
                   folder="news"
+                />
+                
+                <GalleryUpload
+                  label="Gallery Images"
+                  value={formData.gallery_images}
+                  onChange={(urls) => setFormData({ ...formData, gallery_images: urls })}
+                  folder="news/gallery"
+                  maxImages={10}
                 />
                 
                 {/* Publish Date & Time Picker */}
