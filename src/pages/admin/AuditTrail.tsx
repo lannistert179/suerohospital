@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, startOfDay, endOfDay, subDays } from 'date-fns';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Breadcrumbs from '@/components/admin/Breadcrumbs';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, History, User, FileText, Stethoscope, Newspaper, Users, Search, Download, X, LogIn, LogOut, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, History, User, FileText, Stethoscope, Newspaper, Users, Search, Download, X, LogIn, LogOut, CalendarIcon, ChevronLeft, ChevronRight, Radio } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -85,7 +85,43 @@ export default function AuditTrail() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLive, setIsLive] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (!isLive) return;
+
+    const channel = supabase
+      .channel('audit-logs-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'audit_logs',
+        },
+        (payload) => {
+          console.log('New audit log received:', payload);
+          // Add new log to the beginning of the list
+          queryClient.setQueryData(['audit-logs'], (oldData: AuditLog[] | undefined) => {
+            if (!oldData) return [payload.new as AuditLog];
+            return [payload.new as AuditLog, ...oldData];
+          });
+          
+          toast({
+            title: 'New activity',
+            description: `${(payload.new as AuditLog).action} on ${(payload.new as AuditLog).entity_type}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isLive, queryClient, toast]);
 
   const { data: logs, isLoading } = useQuery({
     queryKey: ['audit-logs'],
@@ -248,7 +284,7 @@ export default function AuditTrail() {
       <Breadcrumbs />
       
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-serif font-semibold text-foreground flex items-center gap-3">
               <History className="h-8 w-8 text-primary" />
@@ -258,10 +294,24 @@ export default function AuditTrail() {
               Track all administrative actions and changes
             </p>
           </div>
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant={isLive ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsLive(!isLive)}
+              className={cn(
+                "gap-2",
+                isLive && "bg-green-600 hover:bg-green-700"
+              )}
+            >
+              <Radio className={cn("h-4 w-4", isLive && "animate-pulse")} />
+              {isLive ? "Live" : "Paused"}
+            </Button>
+            <Button onClick={exportToCSV} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
