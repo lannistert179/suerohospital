@@ -103,6 +103,7 @@ export type Database = {
           created_at: string
           display_order: number | null
           excerpt: string | null
+          gallery_images: Json | null
           id: string
           image_url: string | null
           is_published: boolean | null
@@ -117,6 +118,7 @@ export type Database = {
           created_at?: string
           display_order?: number | null
           excerpt?: string | null
+          gallery_images?: Json | null
           id?: string
           image_url?: string | null
           is_published?: boolean | null
@@ -131,6 +133,7 @@ export type Database = {
           created_at?: string
           display_order?: number | null
           excerpt?: string | null
+          gallery_images?: Json | null
           id?: string
           image_url?: string | null
           is_published?: boolean | null
