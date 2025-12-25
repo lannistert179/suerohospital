@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Newspaper, Stethoscope, Activity } from 'lucide-react';
@@ -98,8 +99,8 @@ export default function Dashboard() {
               <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <a
-                href="/admin/doctors"
+              <Link
+                to="/admin/doctors"
                 className="block p-3 rounded-lg border border-border hover:bg-accent transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -109,9 +110,9 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">Add, edit, or remove doctor profiles</p>
                   </div>
                 </div>
-              </a>
-              <a
-                href="/admin/services"
+              </Link>
+              <Link
+                to="/admin/services"
                 className="block p-3 rounded-lg border border-border hover:bg-accent transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -121,9 +122,9 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">Update hospital services information</p>
                   </div>
                 </div>
-              </a>
-              <a
-                href="/admin/news"
+              </Link>
+              <Link
+                to="/admin/news"
                 className="block p-3 rounded-lg border border-border hover:bg-accent transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -133,7 +134,7 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">Create and publish announcements</p>
                   </div>
                 </div>
-              </a>
+              </Link>
             </CardContent>
           </Card>
 
