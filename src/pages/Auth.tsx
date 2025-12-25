@@ -20,15 +20,15 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   
-  const { user, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate('/admin');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -59,9 +59,9 @@ export default function Auth() {
     
     setIsLoading(true);
     const { error } = await signIn(email, password);
-    setIsLoading(false);
     
     if (error) {
+      setIsLoading(false);
       toast({
         variant: 'destructive',
         title: 'Sign in failed',
@@ -74,7 +74,7 @@ export default function Auth() {
         title: 'Welcome back!',
         description: 'You have been signed in successfully.',
       });
-      navigate('/admin');
+      // The useEffect will handle navigation when user state updates
     }
   };
 
@@ -84,9 +84,9 @@ export default function Auth() {
     
     setIsLoading(true);
     const { error } = await signUp(email, password, fullName);
-    setIsLoading(false);
     
     if (error) {
+      setIsLoading(false);
       let message = error.message;
       if (error.message.includes('already registered')) {
         message = 'This email is already registered. Please sign in instead.';
@@ -101,7 +101,7 @@ export default function Auth() {
         title: 'Account created!',
         description: 'You have been signed up successfully.',
       });
-      navigate('/admin');
+      // The useEffect will handle navigation when user state updates
     }
   };
 
