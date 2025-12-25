@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Loader2, GripVertical } from 'lucide-react';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { logAuditEvent } from '@/lib/auditLog';
 import {
   DndContext,
   closestCenter,
@@ -43,7 +45,7 @@ interface Service {
 interface SortableServiceCardProps {
   service: Service;
   onEdit: (service: Service) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, title: string) => void;
   isDeleting: boolean;
 }
 
@@ -116,7 +118,7 @@ function SortableServiceCard({ service, onEdit, onDelete, isDeleting }: Sortable
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onDelete(service.id)}
+            onClick={() => onDelete(service.id, service.title)}
             disabled={isDeleting}
           >
             <Trash2 className="h-3 w-3 mr-1" />
@@ -169,19 +171,26 @@ export default function ServicesAdmin() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { error } = await supabase.from('services').insert({
+      const { data: result, error } = await supabase.from('services').insert({
         title: data.title,
         description: data.description || null,
         icon: data.icon || null,
         image_url: data.image_url || null,
         is_active: data.is_active,
         display_order: data.display_order,
-      });
+      }).select().single();
       if (error) throw error;
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-services'] });
       toast({ title: 'Service added successfully' });
+      logAuditEvent({
+        action: 'create',
+        entityType: 'service',
+        entityId: result.id,
+        entityName: result.title,
+      });
       resetForm();
     },
     onError: (error: Error) => {
@@ -200,10 +209,17 @@ export default function ServicesAdmin() {
         display_order: data.display_order,
       }).eq('id', id);
       if (error) throw error;
+      return { id, title: data.title };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-services'] });
       toast({ title: 'Service updated successfully' });
+      logAuditEvent({
+        action: 'update',
+        entityType: 'service',
+        entityId: result.id,
+        entityName: result.title,
+      });
       resetForm();
     },
     onError: (error: Error) => {
@@ -230,13 +246,20 @@ export default function ServicesAdmin() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, title }: { id: string; title: string }) => {
       const { error } = await supabase.from('services').delete().eq('id', id);
       if (error) throw error;
+      return { id, title };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-services'] });
       toast({ title: 'Service removed successfully' });
+      logAuditEvent({
+        action: 'delete',
+        entityType: 'service',
+        entityId: result.id,
+        entityName: result.title,
+      });
     },
     onError: (error: Error) => {
       toast({ variant: 'destructive', title: 'Error', description: error.message });
@@ -304,6 +327,7 @@ export default function ServicesAdmin() {
 
   return (
     <AdminLayout>
+      <Breadcrumbs />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -395,7 +419,7 @@ export default function ServicesAdmin() {
                     key={service.id}
                     service={service}
                     onEdit={handleEdit}
-                    onDelete={(id) => deleteMutation.mutate(id)}
+                    onDelete={(id, title) => deleteMutation.mutate({ id, title })}
                     isDeleting={deleteMutation.isPending}
                   />
                 ))}

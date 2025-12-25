@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Plus, Pencil, Trash2, Loader2, Calendar, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { logAuditEvent } from '@/lib/auditLog';
 
 interface NewsArticle {
   id: string;
@@ -161,6 +163,7 @@ export default function NewsAdmin() {
 
   return (
     <AdminLayout>
+      <Breadcrumbs />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
