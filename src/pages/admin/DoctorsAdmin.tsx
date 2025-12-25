@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 interface Doctor {
   id: string;
@@ -192,16 +193,12 @@ export default function DoctorsAdmin() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL</Label>
-                  <Input
-                    id="image_url"
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    placeholder="https://..."
-                  />
-                </div>
+                <ImageUpload
+                  label="Photo"
+                  value={formData.image_url}
+                  onChange={(url) => setFormData({ ...formData, image_url: url })}
+                  folder="doctors"
+                />
                 <div className="space-y-2">
                   <Label htmlFor="bio">Bio</Label>
                   <Textarea
