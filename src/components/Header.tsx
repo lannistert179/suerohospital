@@ -1,7 +1,6 @@
 import { Phone, Clock, MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import hospitalLogo from "@/assets/hospital-logo.png";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,7 +9,6 @@ const Header = () => {
     { href: "#home", label: "Home" },
     { href: "#services", label: "Services" },
     { href: "#about", label: "About" },
-    { href: "#appointment", label: "Appointment" },
     { href: "#contact", label: "Contact" },
   ];
 
@@ -31,7 +29,7 @@ const Header = () => {
           </div>
           <div className="hidden md:flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            <span>Baclig, Cabugao, Ilocos Sur</span>
+            <span>2732 MacArthur Hwy, San Antonio, Cabugao, Ilocos Sur</span>
           </div>
         </div>
       </div>
@@ -40,14 +38,12 @@ const Header = () => {
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <a href="#home" className="flex items-center gap-3">
-            <img 
-              src={hospitalLogo} 
-              alt="Suero General Hospital Logo" 
-              className="w-12 h-12 object-contain"
-            />
+            <div className="w-10 h-10 hero-gradient rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-xl">S</span>
+            </div>
             <div>
-              <h1 className="font-serif text-xl font-bold text-foreground">Suero General</h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">Hospital</p>
+              <h1 className="font-serif text-xl font-bold text-foreground">Suero General Hospital</h1>
+              {/* <p className="text-xs text-muted-foreground -mt-0.5">Hospital</p> */}
             </div>
           </a>
 
@@ -62,17 +58,13 @@ const Header = () => {
                 {link.label}
               </a>
             ))}
-            <Button variant="hero" size="default" asChild>
-              <a href="#appointment">Book Appointment</a>
+            <Button variant="hero" size="default">
+              Book Appointment
             </Button>
           </div>
 
           {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
+          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -91,8 +83,8 @@ const Header = () => {
                   {link.label}
                 </a>
               ))}
-              <Button variant="hero" size="default" className="w-full mt-2" asChild>
-                <a href="#appointment" onClick={() => setMobileMenuOpen(false)}>Book Appointment</a>
+              <Button variant="hero" size="default" className="w-full mt-2">
+                Book Appointment
               </Button>
             </div>
           </div>
