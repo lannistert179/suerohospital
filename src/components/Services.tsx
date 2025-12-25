@@ -2,11 +2,11 @@ import {
   Stethoscope, 
   Heart, 
   Baby, 
-  Bone, 
-  Eye, 
-  Syringe,
+  Scissors,
+  TestTube,
+  Microscope,
   Activity,
-  Pill
+  Scan
 } from "lucide-react";
 
 const services = [
@@ -22,8 +22,8 @@ const services = [
   },
   {
     icon: Heart,
-    title: "Cardiology",
-    description: "Complete heart care including diagnostics, treatment, and cardiac rehabilitation services.",
+    title: "Internal Medicine",
+    description: "Specialized care for adult diseases including diagnosis and treatment of complex medical conditions.",
   },
   {
     icon: Baby,
@@ -31,24 +31,24 @@ const services = [
     description: "Specialized healthcare for infants, children, and adolescents with compassionate care.",
   },
   {
-    icon: Bone,
-    title: "Orthopedics",
-    description: "Expert care for bone, joint, and muscle conditions including surgical and non-surgical treatments.",
+    icon: Scissors,
+    title: "Surgery",
+    description: "General surgical services performed by experienced surgeons with modern equipment.",
   },
   {
-    icon: Eye,
-    title: "Ophthalmology",
-    description: "Complete eye care services from routine exams to advanced surgical procedures.",
+    icon: TestTube,
+    title: "Obstetrics & Gynecology",
+    description: "Complete women's health services including prenatal care, delivery, and reproductive health.",
   },
   {
-    icon: Syringe,
-    title: "Laboratory",
-    description: "State-of-the-art diagnostic laboratory with accurate and timely test results.",
+    icon: Microscope,
+    title: "Laboratory Services",
+    description: "Clinical Chemistry, Hematology, Clinical Microscopy, and comprehensive diagnostic testing.",
   },
   {
-    icon: Pill,
-    title: "Pharmacy",
-    description: "In-house pharmacy with comprehensive medication services and professional consultation.",
+    icon: Scan,
+    title: "Diagnostic Imaging",
+    description: "X-ray, ECG, and other imaging services for accurate diagnosis and treatment planning.",
   },
 ];
 
@@ -64,8 +64,8 @@ const Services = () => {
             Comprehensive Healthcare Services
           </h2>
           <p className="text-muted-foreground text-lg">
-            We offer a wide range of medical services to meet the healthcare needs of our community, 
-            delivered by experienced professionals with compassion and expertise.
+            As a DOH-licensed Level 1 General Hospital, we offer a wide range of medical services 
+            to meet the healthcare needs of our community in Ilocos Sur.
           </p>
         </div>
 
@@ -87,6 +87,17 @@ const Services = () => {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Additional Services Banner */}
+        <div className="mt-12 bg-primary/5 rounded-2xl p-8 text-center">
+          <h3 className="font-serif text-xl font-semibold text-foreground mb-3">
+            Additional Specialties Available
+          </h3>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Our hospital network provides access to specialists in Cardiology, Dermatology, ENT, 
+            Ophthalmology, Orthopedics, Neurology, and many more through our partner physicians.
+          </p>
         </div>
       </div>
     </section>

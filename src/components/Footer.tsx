@@ -18,19 +18,21 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-background/70 mb-6 max-w-md leading-relaxed">
-              Providing quality healthcare services to the community of Cabugao, Ilocos Sur 
-              and surrounding areas. Open 24 hours, 7 days a week for your health needs.
+              A DOH-licensed Level 1 General Hospital providing quality healthcare services 
+              to the community of Cabugao, Ilocos Sur. Open 24 hours, 7 days a week.
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://www.facebook.com/suero.hospital/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="mailto:info@suerogeneral.ph"
+                href="mailto:suerogenhosp@yahoo.com"
                 className="w-10 h-10 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="Email"
               >
@@ -72,14 +74,19 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <a href="tel:09178139433" className="text-background/70 hover:text-primary transition-colors">
-                  0917 813 9433
-                </a>
+                <div>
+                  <a href="tel:09178139433" className="text-background/70 hover:text-primary transition-colors block">
+                    0917 813 9433
+                  </a>
+                  <a href="tel:0777285295" className="text-background/70 hover:text-primary transition-colors block">
+                    (077) 728-5295
+                  </a>
+                </div>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 <span className="text-background/70">
-                  2732 MacArthur Hwy, San Antonio, Cabugao, Ilocos Sur
+                  Baclig, Cabugao, Ilocos Sur
                 </span>
               </li>
               <li className="flex items-start gap-3">
