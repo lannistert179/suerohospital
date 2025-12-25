@@ -51,6 +51,7 @@ const Contact = () => {
                   <div>
                     <p className="font-semibold text-foreground">Phone</p>
                     <p className="text-muted-foreground">0917 813 9433</p>
+                    <p className="text-muted-foreground">(077) 728-5295</p>
                     <p className="text-sm text-primary">Tap to call</p>
                   </div>
                 </a>
@@ -62,8 +63,7 @@ const Contact = () => {
                   <div>
                     <p className="font-semibold text-foreground">Address</p>
                     <p className="text-muted-foreground">
-                      2732 MacArthur Highway<br />
-                      San Antonio, Cabugao<br />
+                      Baclig, Cabugao<br />
                       Ilocos Sur, Philippines
                     </p>
                   </div>
@@ -80,15 +80,18 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-5 h-5 text-primary" />
+                <a
+                  href="mailto:suerogenhosp@yahoo.com"
+                  className="flex items-start gap-4 group"
+                >
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                    <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                   </div>
                   <div>
                     <p className="font-semibold text-foreground">Email</p>
-                    <p className="text-muted-foreground">info@suerogeneral.ph</p>
+                    <p className="text-muted-foreground">suerogenhosp@yahoo.com</p>
                   </div>
-                </div>
+                </a>
               </div>
 
               {/* Map placeholder */}

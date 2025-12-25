@@ -1,19 +1,19 @@
-import { CheckCircle, Users, Award, Building } from "lucide-react";
+import { CheckCircle, Users, Award, Building, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const stats = [
   { icon: Users, value: "10,000+", label: "Patients Served" },
-  { icon: Award, value: "15+", label: "Years of Service" },
+  { icon: Award, value: "Level 1", label: "DOH Licensed" },
   { icon: Building, value: "24/7", label: "Availability" },
 ];
 
 const features = [
-  "Modern medical equipment and facilities",
-  "Experienced and compassionate medical staff",
-  "Affordable healthcare services",
-  "Comprehensive diagnostic services",
-  "Emergency response team available 24/7",
-  "Convenient location on MacArthur Highway",
+  "DOH-licensed Level 1 General Hospital",
+  "Private healthcare facility",
+  "Complete diagnostic laboratory services",
+  "24/7 Emergency care available",
+  "Experienced medical professionals",
+  "Accessible location in Baclig, Cabugao",
 ];
 
 const About = () => {
@@ -30,15 +30,16 @@ const About = () => {
               Trusted Healthcare Partner in Ilocos Sur
             </h2>
             <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-              Suero General Hospital has been serving the community of Cabugao and 
-              the greater Ilocos Sur region for over a decade. Located along the 
-              historic MacArthur Highway in San Antonio, we provide accessible 
+              Suero General Hospital is a DOH-licensed Level 1 General Hospital 
+              serving the community of Cabugao and the greater Ilocos Sur region. 
+              Located in Baclig, Cabugao, we provide accessible and quality 
               healthcare to families throughout the province.
             </p>
             <p className="text-muted-foreground mb-8 leading-relaxed">
-              Our commitment to excellence in patient care, combined with our 
-              state-of-the-art facilities and dedicated medical professionals, 
-              makes us a trusted healthcare partner for the community.
+              As a private healthcare facility, we are committed to delivering 
+              comprehensive medical services including General Medicine, Internal Medicine, 
+              Pediatrics, OB-Gynecology, Surgery, and complete diagnostic laboratory 
+              services including Clinical Chemistry, Hematology, and X-ray imaging.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -50,9 +51,22 @@ const About = () => {
               ))}
             </div>
 
-            <Button variant="hero" size="lg">
-              Learn More About Us
-            </Button>
+            <div className="flex flex-wrap gap-4">
+              <Button variant="hero" size="lg" asChild>
+                <a href="#appointment">Book Appointment</a>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <a 
+                  href="https://www.facebook.com/suero.hospital/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  <Facebook className="w-4 h-4" />
+                  Follow on Facebook
+                </a>
+              </Button>
+            </div>
           </div>
 
           {/* Stats and image */}
@@ -63,7 +77,7 @@ const About = () => {
                   <div className="text-center text-primary-foreground">
                     <Building className="w-16 h-16 mx-auto mb-4 opacity-80" />
                     <p className="font-serif text-2xl font-bold">Suero General Hospital</p>
-                    <p className="text-sm opacity-80">Cabugao, Ilocos Sur</p>
+                    <p className="text-sm opacity-80">Baclig, Cabugao, Ilocos Sur</p>
                   </div>
                 </div>
               </div>

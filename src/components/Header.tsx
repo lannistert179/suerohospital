@@ -30,7 +30,7 @@ const Header = () => {
           </div>
           <div className="hidden md:flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            <span>2732 MacArthur Hwy, San Antonio, Cabugao, Ilocos Sur</span>
+            <span>Baclig, Cabugao, Ilocos Sur</span>
           </div>
         </div>
       </div>
