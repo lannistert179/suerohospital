@@ -94,11 +94,16 @@ function SortableArticleCard({ article, onEdit, onDelete, isDeleting }: Sortable
               <GripVertical className="h-4 w-4 text-muted-foreground" />
             </button>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {article.is_published ? (
                   <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                     <Eye className="h-3 w-3" />
                     Published
+                  </span>
+                ) : article.published_at && new Date(article.published_at) > new Date() ? (
+                  <span className="inline-flex items-center gap-1 text-xs bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded">
+                    <Clock className="h-3 w-3" />
+                    Scheduled
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">
