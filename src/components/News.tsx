@@ -18,7 +18,7 @@ const News = () => {
         .from("news")
         .select("*")
         .eq("is_published", true)
-        .order("published_at", { ascending: false })
+        .order("display_order", { ascending: true })
         .limit(4);
       
       if (!error && data) {
