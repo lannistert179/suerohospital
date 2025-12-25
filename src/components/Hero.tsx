@@ -20,7 +20,8 @@ const Hero = () => {
 
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6 animate-fade-up delay-100">
             <span className="block">Our Quest:</span>
-            <span className="text-gradient">Your health at its best.</span>
+            <span className="text-gradient">Your health</span>
+            <span className="text-gradient">at its best.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground mb-8 animate-fade-up delay-200 leading-relaxed">
