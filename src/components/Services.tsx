@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { 
   Stethoscope, 
   Heart, 
@@ -6,53 +7,61 @@ import {
   TestTube,
   Microscope,
   Activity,
-  Scan
+  Scan,
+  Loader2,
+  LucideIcon
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
-const services = [
-  {
-    icon: Activity,
-    title: "Emergency Care",
-    description: "24/7 emergency services with rapid response medical team ready to handle all critical situations.",
-  },
-  {
-    icon: Stethoscope,
-    title: "General Medicine",
-    description: "Comprehensive primary care services for diagnosis, treatment, and prevention of common illnesses.",
-  },
-  {
-    icon: Heart,
-    title: "Internal Medicine",
-    description: "Specialized care for adult diseases including diagnosis and treatment of complex medical conditions.",
-  },
-  {
-    icon: Baby,
-    title: "Pediatrics",
-    description: "Specialized healthcare for infants, children, and adolescents with compassionate care.",
-  },
-  {
-    icon: Scissors,
-    title: "Surgery",
-    description: "General surgical services performed by experienced surgeons with modern equipment.",
-  },
-  {
-    icon: TestTube,
-    title: "Obstetrics & Gynecology",
-    description: "Complete women's health services including prenatal care, delivery, and reproductive health.",
-  },
-  {
-    icon: Microscope,
-    title: "Laboratory Services",
-    description: "Clinical Chemistry, Hematology, Clinical Microscopy, and comprehensive diagnostic testing.",
-  },
-  {
-    icon: Scan,
-    title: "Diagnostic Imaging",
-    description: "X-ray, ECG, and other imaging services for accurate diagnosis and treatment planning.",
-  },
-];
+type Service = Tables<"services">;
+
+const iconMap: Record<string, LucideIcon> = {
+  Activity,
+  Stethoscope,
+  Heart,
+  Baby,
+  Scissors,
+  TestTube,
+  Microscope,
+  Scan,
+};
 
 const Services = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order");
+      
+      if (!error && data) {
+        setServices(data);
+      }
+      setLoading(false);
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="services" className="py-20 bg-secondary/50">
+        <div className="container mx-auto px-4 flex justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
+  if (services.length === 0) {
+    return null;
+  }
+
   return (
     <section id="services" className="py-20 bg-secondary/50">
       <div className="container mx-auto px-4">
@@ -70,23 +79,28 @@ const Services = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service, index) => (
-            <div
-              key={service.title}
-              className="group bg-card p-6 rounded-xl shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors duration-300">
-                <service.icon className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+          {services.map((service, index) => {
+            const IconComponent = service.icon ? iconMap[service.icon] : Stethoscope;
+            return (
+              <div
+                key={service.id}
+                className="group bg-card p-6 rounded-xl shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors duration-300">
+                  {IconComponent && (
+                    <IconComponent className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                  )}
+                </div>
+                <h3 className="font-serif text-xl font-semibold text-foreground mb-2">
+                  {service.title}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {service.description}
+                </p>
               </div>
-              <h3 className="font-serif text-xl font-semibold text-foreground mb-2">
-                {service.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {service.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Additional Services Banner */}
