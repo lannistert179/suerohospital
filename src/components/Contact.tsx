@@ -133,7 +133,7 @@ const Contact = () => {
               {/* Map */}
               <div className="mt-8 aspect-video bg-muted rounded-lg overflow-hidden">
                 <iframe
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=120.4450%2C17.7880%2C120.4650%2C17.7980&amp;layer=mapnik&amp;marker=17.7926%2C120.4559"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=120.4494%2C17.7888%2C120.4594%2C17.7988&amp;layer=mapnik&amp;marker=17.793827907012346%2C120.4544344455317"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
