@@ -1,4 +1,5 @@
 import { Phone, MapPin, Clock, Facebook, Mail } from "lucide-react";
+import hospitalLogo from "@/assets/hospital-logo.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,9 +11,11 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 hero-gradient rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">S</span>
-              </div>
+              <img 
+                src={hospitalLogo} 
+                alt="Suero General Hospital Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <div>
                 <h3 className="font-serif text-xl font-bold">Suero General Hospital</h3>
               </div>
