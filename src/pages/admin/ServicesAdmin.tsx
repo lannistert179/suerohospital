@@ -10,8 +10,25 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, GripVertical } from 'lucide-react';
 import ImageUpload from '@/components/admin/ImageUpload';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Service {
   id: string;
@@ -21,6 +38,94 @@ interface Service {
   image_url: string | null;
   is_active: boolean;
   display_order: number;
+}
+
+interface SortableServiceCardProps {
+  service: Service;
+  onEdit: (service: Service) => void;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}
+
+function SortableServiceCard({ service, onEdit, onDelete, isDeleting }: SortableServiceCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: service.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card 
+      ref={setNodeRef} 
+      style={style} 
+      className={`${!service.is_active ? 'opacity-60' : ''} ${isDragging ? 'shadow-lg z-50' : ''}`}
+    >
+      {service.image_url && (
+        <div className="aspect-video overflow-hidden rounded-t-lg">
+          <img 
+            src={service.image_url} 
+            alt={service.title} 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded hover:bg-muted touch-none"
+              aria-label="Drag to reorder"
+            >
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </button>
+            {service.icon && (
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <span className="text-xs font-medium text-primary">{service.icon}</span>
+              </div>
+            )}
+            <CardTitle className="text-base">{service.title}</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">#{service.display_order}</span>
+            {!service.is_active && (
+              <span className="text-xs bg-muted px-2 py-1 rounded">Inactive</span>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {service.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{service.description}</p>
+        )}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => onEdit(service)}>
+            <Pencil className="h-3 w-3 mr-1" />
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(service.id)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function ServicesAdmin() {
@@ -37,6 +142,17 @@ export default function ServicesAdmin() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const { data: services, isLoading } = useQuery({
     queryKey: ['admin-services'],
@@ -95,6 +211,24 @@ export default function ServicesAdmin() {
     },
   });
 
+  const reorderMutation = useMutation({
+    mutationFn: async (updates: { id: string; display_order: number }[]) => {
+      const promises = updates.map(({ id, display_order }) =>
+        supabase.from('services').update({ display_order }).eq('id', id)
+      );
+      const results = await Promise.all(promises);
+      const error = results.find((r) => r.error)?.error;
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+      toast({ title: 'Order updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('services').delete().eq('id', id);
@@ -144,6 +278,28 @@ export default function ServicesAdmin() {
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && services) {
+      const oldIndex = services.findIndex((s) => s.id === active.id);
+      const newIndex = services.findIndex((s) => s.id === over.id);
+      
+      const newOrder = arrayMove(services, oldIndex, newIndex);
+      
+      // Update display_order for all affected items
+      const updates = newOrder.map((service, index) => ({
+        id: service.id,
+        display_order: index,
+      }));
+
+      // Optimistically update the cache
+      queryClient.setQueryData(['admin-services'], newOrder.map((s, i) => ({ ...s, display_order: i })));
+      
+      reorderMutation.mutate(updates);
+    }
+  };
+
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -152,7 +308,7 @@ export default function ServicesAdmin() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-serif font-semibold text-foreground">Services</h1>
-            <p className="text-muted-foreground mt-1">Manage hospital services</p>
+            <p className="text-muted-foreground mt-1">Manage hospital services • Drag to reorder</p>
           </div>
           <Dialog open={isOpen} onOpenChange={(open) => {
             setIsOpen(open);
@@ -202,15 +358,6 @@ export default function ServicesAdmin() {
                   onChange={(url) => setFormData({ ...formData, image_url: url })}
                   folder="services"
                 />
-                <div className="space-y-2">
-                  <Label htmlFor="display_order">Display Order</Label>
-                  <Input
-                    id="display_order"
-                    type="number"
-                    value={formData.display_order}
-                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="is_active">Active</Label>
                   <Switch
@@ -233,59 +380,28 @@ export default function ServicesAdmin() {
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : services && services.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <Card key={service.id} className={!service.is_active ? 'opacity-60' : ''}>
-                {service.image_url && (
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={service.image_url} 
-                      alt={service.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {service.icon && (
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary">{service.icon}</span>
-                        </div>
-                      )}
-                      <CardTitle className="text-base">{service.title}</CardTitle>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">#{service.display_order}</span>
-                      {!service.is_active && (
-                        <span className="text-xs bg-muted px-2 py-1 rounded">Inactive</span>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {service.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{service.description}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
-                      <Pencil className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => deleteMutation.mutate(service.id)}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={services.map((s) => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {services.map((service) => (
+                  <SortableServiceCard
+                    key={service.id}
+                    service={service}
+                    onEdit={handleEdit}
+                    onDelete={(id) => deleteMutation.mutate(id)}
+                    isDeleting={deleteMutation.isPending}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
