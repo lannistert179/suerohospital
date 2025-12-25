@@ -7,11 +7,7 @@ const Hero = () => {
     <section id="home" className="relative min-h-screen flex items-center pt-32 pb-16">
       {/* Background image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={heroImage}
-          alt="Suero General Hospital building exterior"
-          className="w-full h-full object-cover"
-        />
+        <img src={heroImage} alt="Suero General Hospital building exterior" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
       </div>
 
@@ -23,11 +19,13 @@ const Hero = () => {
           </div>
 
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6 animate-fade-up delay-100">
-            Your Health Is Our <span className="text-gradient">Priority</span>
+            Our Quest:<span className="text-gradient">Your health at its best.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground mb-8 animate-fade-up delay-200 leading-relaxed">
-            Suero General Hospital provides comprehensive healthcare services to the community of Cabugao, Ilocos Sur. With our dedicated medical professionals and modern facilities, we're committed to delivering exceptional patient care around the clock.
+            Suero General Hospital provides comprehensive healthcare services to the community of Cabugao, Ilocos Sur.
+            With our dedicated medical professionals and modern facilities, we're committed to delivering exceptional
+            patient care around the clock.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-up delay-300">
