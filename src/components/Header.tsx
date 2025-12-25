@@ -1,6 +1,7 @@
 import { Phone, Clock, MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import hospitalLogo from "@/assets/hospital-logo.png";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,9 +40,11 @@ const Header = () => {
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <a href="#home" className="flex items-center gap-3">
-            <div className="w-10 h-10 hero-gradient rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">S</span>
-            </div>
+            <img 
+              src={hospitalLogo} 
+              alt="Suero General Hospital Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <div>
               <h1 className="font-serif text-xl font-bold text-foreground">Suero General</h1>
               <p className="text-xs text-muted-foreground -mt-0.5">Hospital</p>
