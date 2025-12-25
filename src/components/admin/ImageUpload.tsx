@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/errorHandler';
 
 interface ImageUploadProps {
   value: string;
@@ -62,11 +63,10 @@ export default function ImageUpload({ value, onChange, label = "Image", folder =
       onChange(publicUrl);
       toast({ title: 'Image uploaded successfully' });
     } catch (error) {
-      console.error('Upload error:', error);
       toast({
         variant: 'destructive',
         title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload image',
+        description: getErrorMessage(error),
       });
     } finally {
       setUploading(false);

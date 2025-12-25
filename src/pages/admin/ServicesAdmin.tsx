@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Loader2, GripVertical } from 'lucide-react';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { logAuditEvent } from '@/lib/auditLog';
+import { getErrorMessage } from '@/lib/errorHandler';
 import {
   DndContext,
   closestCenter,
@@ -194,7 +195,7 @@ export default function ServicesAdmin() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -223,7 +224,7 @@ export default function ServicesAdmin() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -241,7 +242,7 @@ export default function ServicesAdmin() {
       toast({ title: 'Order updated successfully' });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
@@ -262,7 +263,7 @@ export default function ServicesAdmin() {
       });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: getErrorMessage(error) });
     },
   });
 
