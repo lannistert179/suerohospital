@@ -1,6 +1,7 @@
-import { Phone, Clock, MapPin, Menu, X } from "lucide-react";
+import { Phone, Clock, MapPin, Menu, X, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import hospitalLogo from "@/assets/hospital-logo.png";
 
 const Header = () => {
@@ -61,6 +62,12 @@ const Header = () => {
             <Button variant="hero" size="default">
               Book Appointment
             </Button>
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="gap-2">
+                <LogIn className="w-4 h-4" />
+                Admin
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -86,6 +93,12 @@ const Header = () => {
               <Button variant="hero" size="default" className="w-full mt-2">
                 Book Appointment
               </Button>
+              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" size="default" className="w-full gap-2">
+                  <LogIn className="w-4 h-4" />
+                  Admin Login
+                </Button>
+              </Link>
             </div>
           </div>
         )}
