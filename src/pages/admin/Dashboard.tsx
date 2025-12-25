@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
+import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Newspaper, Stethoscope, Activity } from 'lucide-react';
+import { Users, Newspaper, Stethoscope, Activity, History } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -65,6 +66,7 @@ export default function Dashboard() {
 
   return (
     <AdminLayout>
+      <Breadcrumbs />
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-serif font-semibold text-foreground">Dashboard</h1>
@@ -135,9 +137,20 @@ export default function Dashboard() {
                   </div>
                 </div>
               </Link>
+              <Link
+                to="/admin/audit"
+                className="block p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <History className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Audit Trail</p>
+                    <p className="text-sm text-muted-foreground">View all administrative actions</p>
+                  </div>
+                </div>
+              </Link>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>System Information</CardTitle>

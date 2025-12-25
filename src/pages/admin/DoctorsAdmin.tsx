@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { logAuditEvent } from '@/lib/auditLog';
 
 interface Doctor {
   id: string;
@@ -55,7 +57,7 @@ export default function DoctorsAdmin() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { error } = await supabase.from('doctors').insert({
+      const { data: result, error } = await supabase.from('doctors').insert({
         name: data.name,
         specialty: data.specialty,
         image_url: data.image_url || null,
@@ -63,12 +65,19 @@ export default function DoctorsAdmin() {
         email: data.email || null,
         phone: data.phone || null,
         is_active: data.is_active,
-      });
+      }).select().single();
       if (error) throw error;
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-doctors'] });
       toast({ title: 'Doctor added successfully' });
+      logAuditEvent({
+        action: 'create',
+        entityType: 'doctor',
+        entityId: result.id,
+        entityName: result.name,
+      });
       resetForm();
     },
     onError: (error: Error) => {
@@ -88,10 +97,17 @@ export default function DoctorsAdmin() {
         is_active: data.is_active,
       }).eq('id', id);
       if (error) throw error;
+      return { id, name: data.name };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-doctors'] });
       toast({ title: 'Doctor updated successfully' });
+      logAuditEvent({
+        action: 'update',
+        entityType: 'doctor',
+        entityId: result.id,
+        entityName: result.name,
+      });
       resetForm();
     },
     onError: (error: Error) => {
@@ -100,13 +116,20 @@ export default function DoctorsAdmin() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
       const { error } = await supabase.from('doctors').delete().eq('id', id);
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-doctors'] });
       toast({ title: 'Doctor removed successfully' });
+      logAuditEvent({
+        action: 'delete',
+        entityType: 'doctor',
+        entityId: result.id,
+        entityName: result.name,
+      });
     },
     onError: (error: Error) => {
       toast({ variant: 'destructive', title: 'Error', description: error.message });
@@ -154,6 +177,7 @@ export default function DoctorsAdmin() {
 
   return (
     <AdminLayout>
+      <Breadcrumbs />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -287,7 +311,7 @@ export default function DoctorsAdmin() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => deleteMutation.mutate(doctor.id)}
+                      onClick={() => deleteMutation.mutate({ id: doctor.id, name: doctor.name })}
                       disabled={deleteMutation.isPending}
                     >
                       <Trash2 className="h-3 w-3 mr-1" />

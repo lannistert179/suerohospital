@@ -10,7 +10,8 @@ import {
   LogOut, 
   Home,
   Menu,
-  X
+  X,
+  History
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/admin/doctors', label: 'Doctors', icon: Users },
   { href: '/admin/services', label: 'Services', icon: Stethoscope },
   { href: '/admin/news', label: 'News', icon: Newspaper },
+  { href: '/admin/audit', label: 'Audit Trail', icon: History },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
