@@ -1,51 +1,45 @@
-import { Stethoscope, Award, GraduationCap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Stethoscope, Award, GraduationCap, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
-const doctors = [
-  {
-    name: "Dr. Maria Santos",
-    specialty: "Internal Medicine",
-    credentials: "MD, FPCP",
-    experience: "15+ years",
-    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Dr. Jose Reyes",
-    specialty: "General Surgery",
-    credentials: "MD, FPCS",
-    experience: "20+ years",
-    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Dr. Ana Cruz",
-    specialty: "Pediatrics",
-    credentials: "MD, FPPS",
-    experience: "12+ years",
-    image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Dr. Ramon Garcia",
-    specialty: "OB-Gynecology",
-    credentials: "MD, FPOGS",
-    experience: "18+ years",
-    image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Dr. Elena Villanueva",
-    specialty: "Cardiology",
-    credentials: "MD, FPCC",
-    experience: "10+ years",
-    image: "https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Dr. Miguel Fernandez",
-    specialty: "Orthopedics",
-    credentials: "MD, FPOA",
-    experience: "14+ years",
-    image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400&h=400&fit=crop&crop=face",
-  },
-];
+type Doctor = Tables<"doctors">;
 
 const Doctors = () => {
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      const { data, error } = await supabase
+        .from("doctors")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
+      
+      if (!error && data) {
+        setDoctors(data);
+      }
+      setLoading(false);
+    };
+
+    fetchDoctors();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="doctors" className="py-20 bg-background">
+        <div className="container mx-auto px-4 flex justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
+  if (doctors.length === 0) {
+    return null;
+  }
+
   return (
     <section id="doctors" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -63,14 +57,14 @@ const Doctors = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {doctors.map((doctor, index) => (
+          {doctors.map((doctor) => (
             <div
-              key={index}
+              key={doctor.id}
               className="group bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
-                  src={doctor.image}
+                  src={doctor.image_url || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop&crop=face"}
                   alt={`${doctor.name} - ${doctor.specialty}`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -87,12 +81,14 @@ const Doctors = () => {
                 <h3 className="font-serif text-xl font-bold text-foreground mb-1">
                   {doctor.name}
                 </h3>
-                <p className="text-primary font-medium mb-4">{doctor.credentials}</p>
+                {doctor.bio && (
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{doctor.bio}</p>
+                )}
                 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <Award className="w-4 h-4 text-primary" />
-                    <span>{doctor.experience}</span>
+                    <span>{doctor.specialty}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <GraduationCap className="w-4 h-4 text-primary" />
