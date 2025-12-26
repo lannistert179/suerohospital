@@ -43,7 +43,7 @@ const About = () => {
 
             <div className="flex flex-wrap gap-4">
               <Button variant="hero" size="lg" asChild>
-                <a href="#appointment">Book Appointment</a>
+                
               </Button>
               <Button variant="outline" size="lg" asChild>
                 <a href="https://www.facebook.com/suero.hospital/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
