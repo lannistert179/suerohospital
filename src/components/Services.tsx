@@ -9,7 +9,11 @@ import {
   Activity,
   Scan,
   Loader2,
-  LucideIcon
+  LucideIcon,
+  Droplet,
+  HeartPulse,
+  Ambulance,
+  Pill
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -25,6 +29,10 @@ const iconMap: Record<string, LucideIcon> = {
   TestTube,
   Microscope,
   Scan,
+  Droplet,
+  HeartPulse,
+  Ambulance,
+  Pill,
 };
 
 const Services = () => {
