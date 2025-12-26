@@ -15,11 +15,61 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
+    // Create a client with the anon key first for auth verification
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey)
+    
+    // Verify authentication
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      console.log('[publish-scheduled-news] Unauthorized: No authorization header')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: No authorization header provided' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token)
+    
+    if (authError || !user) {
+      console.log('[publish-scheduled-news] Unauthorized: Invalid token', authError?.message)
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Use service role client for role check and database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    // Verify admin role
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle()
+    
+    if (roleError) {
+      console.error('[publish-scheduled-news] Error checking admin role:', roleError)
+      return new Response(
+        JSON.stringify({ error: 'Error verifying permissions' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!roleData) {
+      console.log(`[publish-scheduled-news] Forbidden: User ${user.id} is not an admin`)
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     
     const now = new Date().toISOString()
     
-    console.log(`[publish-scheduled-news] Checking for scheduled articles at ${now}`)
+    console.log(`[publish-scheduled-news] Admin ${user.email} checking for scheduled articles at ${now}`)
     
     // Find articles that are scheduled (not published but have a published_at in the past)
     const { data: scheduledArticles, error: fetchError } = await supabase
@@ -56,9 +106,19 @@ Deno.serve(async (req) => {
       throw updateError
     }
     
-    // Log what was published
+    // Log to audit_logs table
     for (const article of scheduledArticles) {
       console.log(`[publish-scheduled-news] Published: "${article.title}" (scheduled for ${article.published_at})`)
+      
+      await supabase.from('audit_logs').insert({
+        user_id: user.id,
+        user_email: user.email,
+        action: 'publish_scheduled',
+        entity_type: 'news',
+        entity_id: article.id,
+        entity_name: article.title,
+        details: { scheduled_for: article.published_at, triggered_by: 'edge_function' }
+      })
     }
     
     return new Response(
@@ -74,7 +134,7 @@ Deno.serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('[publish-scheduled-news] Error:', errorMessage)
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'An internal error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
